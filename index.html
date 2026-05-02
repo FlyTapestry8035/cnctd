@@ -1,48 +1,133 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Updated Interface</title>
-    <link rel="stylesheet" href="styles.css">
-    <style>
-        body {
-            font-family: 'Courier New', monospace;
-            background-color: #f0f0f0;
-        }
-        .session-screen {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
-            border: 1px solid #ccc;
-            background-color: white;
-            margin: 20px;
-            border-radius: 5px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-        .chat-only {
-            display: none;
-        }
-        .chat-visible .chat-only {
-            display: block;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>cnctd</title>
+  <link rel="stylesheet" href="./styles.css" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23111'/%3E%3Ctext x='50%25' y='58%25' font-family='monospace' font-size='14' font-weight='700' text-anchor='middle' fill='%2300e0a4'%3Ec%3C/text%3E%3C/svg%3E" />
 </head>
 <body>
-    <div class="session-screen">
-        <h1>Session Screen</h1>
-        <p>Welcome to the chat interface! Have a conversation below:</p>
-        <textarea id="chatBox" rows="10" cols="50"></textarea><br/>
-        <button type="button">Send</button>
+
+  <!-- Token entry -->
+  <section id="view-token" class="view view--home hidden">
+    <div class="hero">
+      <h1 class="logo">cnctd</h1>
+      <p class="tagline">Sessions are stored as GitHub gists. We need a token to read &amp; write them.</p>
+
+      <div class="card">
+        <h2>GitHub token</h2>
+        <p class="muted">
+          Create a <strong>classic</strong> personal access token with the <code>gist</code> scope at
+          <a href="https://github.com/settings/tokens/new?scopes=gist&amp;description=cnctd" target="_blank" rel="noopener noreferrer">github.com/settings/tokens</a>.
+          Token is stored only in your browser's localStorage.
+        </p>
+        <form id="formToken" class="row">
+          <input id="tokenInput" class="input" type="password" placeholder="ghp_..." autocomplete="off" spellcheck="false" />
+          <button class="btn btn--primary" type="submit">Save</button>
+        </form>
+        <p id="tokenError" class="muted small" style="color: var(--warn); margin-top: 8px;"></p>
+      </div>
     </div>
+  </section>
 
-    <button id="toggleChat" type="button">Toggle Chat Only</button>
+  <!-- Home / landing -->
+  <section id="view-home" class="view view--home hidden">
+    <div class="hero">
+      <h1 class="logo">cnctd</h1>
+      <p class="tagline">Private sessions backed by a GitHub gist. Chat &amp; share a Markdown file.</p>
 
-    <script>
-        document.getElementById('toggleChat').onclick = function() {
-            document.body.classList.toggle('chat-visible');
-        };
-    </script>
+      <div class="card">
+        <h2>Start a session</h2>
+        <p class="muted">Creates a private gist that holds the chat and the shared <code>.md</code> file.</p>
+        <button id="btnCreate" class="btn btn--primary">Create new session</button>
+      </div>
+
+      <div class="card">
+        <h2>Join a session</h2>
+        <p class="muted">Paste the gist ID or full gist URL.</p>
+        <form id="formJoin" class="row">
+          <input id="joinKey" class="input" type="text" placeholder="gist id or url" autocomplete="off" spellcheck="false" />
+          <button class="btn" type="submit">Join</button>
+        </form>
+      </div>
+
+      <button id="btnChangeToken" class="btn-link">change github token</button>
+      <p class="footer-note">Each participant needs their own GitHub token with gist scope. Don't share tokens.</p>
+    </div>
+  </section>
+
+  <!-- Name entry -->
+  <section id="view-name" class="view view--name hidden">
+    <div class="hero">
+      <h1 class="logo">cnctd</h1>
+      <div class="card">
+        <h2>What should we call you?</h2>
+        <p class="muted">Joining gist <code id="nameSessionId"></code></p>
+        <form id="formName" class="row">
+          <input id="nameInput" class="input" type="text" placeholder="Your name" maxlength="40" autofocus />
+          <button class="btn btn--primary" type="submit">Enter</button>
+        </form>
+        <button id="btnBack" class="btn-link" type="button">&larr; back</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- App -->
+  <section id="view-app" class="view view--app hidden">
+    <header class="app-header">
+      <div class="brand">
+        <span class="logo logo--small">cnctd</span>
+        <span class="status-dot" id="statusDot" title="connecting..."></span>
+      </div>
+      <div class="session-meta">
+        <span class="muted">gist</span>
+        <code id="sessionKey"></code>
+        <button id="btnCopy" class="btn-tiny" title="Copy session link">copy</button>
+        <a id="gistLink" class="btn-tiny" target="_blank" rel="noopener noreferrer" title="Open gist on GitHub">open</a>
+        <button id="btnLeave" class="btn-tiny btn-tiny--warn" title="Leave session">leave</button>
+      </div>
+      <div class="counters">
+        <span class="counter"><span id="userCount">0</span> here</span>
+        <button id="btnTogglePane" class="btn-tiny" title="Show/hide markdown">md</button>
+      </div>
+    </header>
+
+    <main class="app-main">
+      <aside class="panel panel--users">
+        <div class="panel-head">
+          <span>People</span>
+          <span class="muted small">(<span id="userCount2">0</span>)</span>
+        </div>
+        <ul id="userList" class="user-list"></ul>
+      </aside>
+
+      <section class="panel panel--chat">
+        <div id="messages" class="messages"></div>
+        <form id="formSend" class="composer">
+          <textarea id="messageInput" class="composer-input" rows="1" placeholder="Message..." maxlength="4000"></textarea>
+          <button class="btn btn--primary" type="submit">Send</button>
+        </form>
+      </section>
+
+      <section class="panel panel--md" id="mdPanel">
+        <div class="panel-head md-head">
+          <span>shared.md</span>
+          <div class="md-tabs">
+            <button class="tab tab--active" data-tab="edit">edit</button>
+            <button class="tab" data-tab="preview">preview</button>
+          </div>
+          <span id="mdStatus" class="muted small"></span>
+        </div>
+        <textarea id="mdEditor" class="md-editor" spellcheck="false" placeholder="# Hello"></textarea>
+        <div id="mdPreview" class="md-preview hidden"></div>
+      </section>
+    </main>
+  </section>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+  <script src="./app.js"></script>
 </body>
 </html>
