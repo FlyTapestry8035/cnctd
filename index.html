@@ -1,139 +1,48 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Markdown Share & Chat</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <style>
-    body { font-family: sans-serif; max-width: 900px; margin: auto; padding: 2em; }
-    .flex { display: flex; gap: 2em; }
-    textarea, input, pre, .chat { width: 100%; }
-    .chat { border:1px solid #ccc; height: 200px; overflow-y:auto; padding:1em; margin-bottom:1em;}
-    .chat-msg { margin: 0.3em 0; }
-    .session { margin-bottom:1em; }
-    #editor { min-height:250px; }
-  </style>
-  <!-- PeerJS CDN -->
-  <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
-  <!-- Marked for Markdown rendering -->
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Updated Interface</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background-color: #f0f0f0;
+        }
+        .session-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            border: 1px solid #ccc;
+            background-color: white;
+            margin: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .chat-only {
+            display: none;
+        }
+        .chat-visible .chat-only {
+            display: block;
+        }
+    </style>
 </head>
 <body>
-  <h1>Markdown Share & Chat</h1>
-  <div class="session">
-    <button id="create">Create Session</button>
-    <input id="joinInput" placeholder="Session key to join">
-    <button id="join">Join Session</button>
-    <span id="sessionKey"></span>
-  </div>
-  <div class="flex">
-    <div style="flex:1">
-      <h3>Markdown Editor</h3>
-      <textarea id="editor" placeholder="Type Markdown here..."></textarea>
-      <input type="file" id="fileInput" accept=".md"/>
+    <div class="session-screen">
+        <h1>Session Screen</h1>
+        <p>Welcome to the chat interface! Have a conversation below:</p>
+        <textarea id="chatBox" rows="10" cols="50"></textarea><br/>
+        <button type="button">Send</button>
     </div>
-    <div style="flex:1">
-      <h3>Preview</h3>
-      <div id="preview" style="border:1px solid #ccc; min-height:250px;padding:1em;"></div>
-    </div>
-  </div>
-  <h3>Session Chat</h3>
-  <div class="chat" id="chat"></div>
-  <input id="chatInput" placeholder="Type your message...">
-  <button id="send">Send</button>
-  <script>
-  // PeerJS signaling
-  let peer = null, conn = null, sessionKey = "";
-  // UI elements
-  const sessionKeyEl = document.getElementById('sessionKey');
-  const chatEl = document.getElementById('chat');
-  const editor = document.getElementById('editor');
-  const preview = document.getElementById('preview');
-  let isHost = false;
-  let markdownContent = "";
 
-  function logChat(msg, who="") {
-    let d = document.createElement('div');
-    d.className = "chat-msg";
-    d.textContent = who ? (who+": "+msg) : msg;
-    chatEl.appendChild(d);
-    chatEl.scrollTop = chatEl.scrollHeight;
-  }
+    <button id="toggleChat" type="button">Toggle Chat Only</button>
 
-  // Markdown Preview Handler
-  editor.addEventListener('input', e => {
-    markdownContent = editor.value;
-    preview.innerHTML = marked.parse(editor.value);
-    if (conn && conn.open) conn.send({type:"markdown", data:editor.value});
-  });
-
-  // File Upload Handler
-  document.getElementById('fileInput').addEventListener('change', e => {
-    let file = e.target.files[0];
-    if (file) {
-      file.text().then(txt => {
-        editor.value = txt;
-        editor.dispatchEvent(new Event('input'));
-      });
-    }
-  });
-
-  // Session handling
-  document.getElementById('create').onclick = () => {
-    isHost = true;
-    peer = new Peer();
-    peer.on('open', id => {
-      sessionKey = id;
-      sessionKeyEl.textContent = "Session key: " + id;
-      logChat("Session created. Share this key with your friend.");
-    });
-    peer.on('connection', c => {
-      conn = c;
-      conn.on('data', handleData);
-      // Send current markdown
-      conn.on('open', () => {
-        conn.send({type:"markdown", data:editor.value});
-      });
-    });
-  };
-
-  document.getElementById('join').onclick = () => {
-    const key = document.getElementById('joinInput').value.trim();
-    if (!key) return;
-    peer = new Peer();
-    conn = peer.connect(key);
-    conn.on('open', () => {
-      sessionKeyEl.textContent = "Connected to session: "+key;
-      logChat("Connected to session. Start editing/chatting.");
-    });
-    conn.on('data', handleData);
-  };
-
-  function handleData(msg) {
-    if (msg.type==="chat") {
-      logChat(msg.data, "Peer");
-    }
-    if (msg.type==="markdown" && msg.data!==editor.value) {
-      editor.value = msg.data;
-      preview.innerHTML = marked.parse(msg.data);
-    }
-  }
-
-  // Chat Handler
-  document.getElementById('send').onclick = () => {
-    const val = document.getElementById('chatInput').value;
-    if (!val) return;
-    logChat(val, "You");
-    if (conn && conn.open) conn.send({type:"chat", data:val});
-    document.getElementById('chatInput').value = "";
-  };
-  document.getElementById('chatInput').addEventListener('keydown', function(e){
-      if(e.key==="Enter") document.getElementById('send').click();
-  });
-
-  // Render initial markdown (if any)
-  preview.innerHTML = marked.parse(editor.value);
-
-  </script>
+    <script>
+        document.getElementById('toggleChat').onclick = function() {
+            document.body.classList.toggle('chat-visible');
+        };
+    </script>
 </body>
 </html>
