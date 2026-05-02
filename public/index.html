@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>cnctd</title>
+  <link rel="stylesheet" href="/styles.css" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23111'/%3E%3Ctext x='50%25' y='58%25' font-family='monospace' font-size='14' font-weight='700' text-anchor='middle' fill='%2300e0a4'%3Ec%3C/text%3E%3C/svg%3E" />
+</head>
+<body>
+
+  <!-- Home / landing -->
+  <section id="view-home" class="view view--home">
+    <div class="hero">
+      <h1 class="logo">cnctd</h1>
+      <p class="tagline">Private sessions. Real chat. A shared Markdown file.</p>
+
+      <div class="card">
+        <h2>Start a session</h2>
+        <p class="muted">Create a session and share the key with up to 2,000 people.</p>
+        <button id="btnCreate" class="btn btn--primary">Create new session</button>
+      </div>
+
+      <div class="card">
+        <h2>Join a session</h2>
+        <p class="muted">Have a session key? Paste it here.</p>
+        <form id="formJoin" class="row">
+          <input id="joinKey" class="input" type="text" placeholder="session key" autocomplete="off" spellcheck="false" />
+          <button class="btn" type="submit">Join</button>
+        </form>
+      </div>
+
+      <p class="footer-note">Sessions live in memory until everyone leaves. Don't share keys with people you don't trust.</p>
+    </div>
+  </section>
+
+  <!-- Name entry -->
+  <section id="view-name" class="view view--name hidden">
+    <div class="hero">
+      <h1 class="logo">cnctd</h1>
+      <div class="card">
+        <h2>What should we call you?</h2>
+        <p class="muted">Joining session <code id="nameSessionId"></code></p>
+        <form id="formName" class="row">
+          <input id="nameInput" class="input" type="text" placeholder="Your name" maxlength="40" autofocus />
+          <button class="btn btn--primary" type="submit">Enter</button>
+        </form>
+        <button id="btnBack" class="btn-link" type="button">&larr; back</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- App -->
+  <section id="view-app" class="view view--app hidden">
+    <header class="app-header">
+      <div class="brand">
+        <span class="logo logo--small">cnctd</span>
+        <span class="status-dot" id="statusDot" title="connecting..."></span>
+      </div>
+      <div class="session-meta">
+        <span class="muted">session</span>
+        <code id="sessionKey"></code>
+        <button id="btnCopy" class="btn-tiny" title="Copy session key">copy</button>
+        <button id="btnLeave" class="btn-tiny btn-tiny--warn" title="Leave session">leave</button>
+      </div>
+      <div class="counters">
+        <span class="counter"><span id="userCount">0</span> online</span>
+        <button id="btnTogglePane" class="btn-tiny" title="Show/hide markdown">md</button>
+      </div>
+    </header>
+
+    <main class="app-main">
+      <aside class="panel panel--users">
+        <div class="panel-head">
+          <span>People</span>
+          <span class="muted small">(<span id="userCount2">0</span>)</span>
+        </div>
+        <ul id="userList" class="user-list"></ul>
+      </aside>
+
+      <section class="panel panel--chat">
+        <div id="messages" class="messages"></div>
+        <form id="formSend" class="composer">
+          <textarea id="messageInput" class="composer-input" rows="1" placeholder="Message..." maxlength="4000"></textarea>
+          <button class="btn btn--primary" type="submit">Send</button>
+        </form>
+      </section>
+
+      <section class="panel panel--md" id="mdPanel">
+        <div class="panel-head md-head">
+          <span>shared.md</span>
+          <div class="md-tabs">
+            <button class="tab tab--active" data-tab="edit">edit</button>
+            <button class="tab" data-tab="preview">preview</button>
+          </div>
+          <span id="mdStatus" class="muted small"></span>
+        </div>
+        <textarea id="mdEditor" class="md-editor" spellcheck="false" placeholder="# Hello"></textarea>
+        <div id="mdPreview" class="md-preview hidden"></div>
+      </section>
+    </main>
+  </section>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>

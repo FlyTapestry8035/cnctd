@@ -1,0 +1,17 @@
+{
+  "name": "cnctd",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Private session-based chat with collaborative Markdown",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}
